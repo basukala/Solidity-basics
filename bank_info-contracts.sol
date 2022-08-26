@@ -3,15 +3,16 @@ pragma solidity ^0.8.13;
 
 contract Bank{
     struct UserData{
-        string bank_name;
+        uint256 bank_name;
         string branch;
         uint256 balance;
         bool isExists;
     }
 
+
     struct UserDataReturn{
         uint256 bank_account_num;
-        string bank_name;
+        uint256 bank_name;
         string branch;
         uint256 balance;
     }
@@ -23,7 +24,7 @@ contract Bank{
 
 
     //set data as per the mapping for user accounts
-    function setUserData(uint256 _bank_account_num,string memory _bank_name, string memory _branch, uint256 _balance)  public {
+    function setUserData(uint256 _bank_account_num,uint256 _bank_name, string memory _branch, uint256 _balance)  public {
         UserDetails[msg.sender][_bank_account_num]=UserData(_bank_name,_branch,_balance,true);
         user_address.push(msg.sender);
         user_acc.push(_bank_account_num);
@@ -44,17 +45,44 @@ contract Bank{
         UserDataReturn[] memory userReturns=new UserDataReturn[](user_acc.length);
         uint256 counter;
         for(uint i=0; i<user_acc.length; i++){
-            if(UserData[msg.sender][user_acc[i]].isExists == true){
+            if(UserDetails[msg.sender][user_acc[i]].isExists == true){
                 UserDataReturn memory returnData =UserDataReturn(
                     user_acc[i],
-                    UserDataReturn[msg.sender][user_acc[i]].bank_name,
-                    UserDataReturn[msg.sender][user_acc[i]].branch,
-                    UserDataReturn[msg.sender][user_acc[i]].balance
+                    UserDetails[msg.sender][user_acc[i]].bank_name,
+                    UserDetails[msg.sender][user_acc[i]].branch,
+                    UserDetails[msg.sender][user_acc[i]].balance
                 );
+                 userReturns[counter] = returnData;
+                 counter++;
             }
-            userReturns[msg.sender]=UserDataReturn;
-            counter++;
+           
         }
         return userReturns;
     }
+    
+    //get all accounts and info for specific bank
+    function getAllAccount(uint256 _bankName) public view returns(UserDataReturn[] memory){
+        UserDataReturn[] memory userAdd= new UserDataReturn[](user_acc.length);
+        uint256 counter;
+        for(uint i=0; i<user_address.length; i++){
+            for(uint j=0; j<user_acc.length; j++){
+                
+                if(UserDetails[user_address[i]][user_acc[j]].bank_name == _bankName){
+                    UserDataReturn memory accAddress=UserDataReturn(
+                        user_acc[j],
+                        _bankName,
+                        UserDetails[user_address[i]][user_acc[j]].branch,
+                        UserDetails[user_address[i]][user_acc[j]].balance
+                        );
+
+                        userAdd[counter]=accAddress;
+                        counter++;
+                }                
+
+            }
+        }
+        return userAdd;
+
+    }
+    
 }
