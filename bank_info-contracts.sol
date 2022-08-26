@@ -59,7 +59,7 @@ contract Bank{
         }
         return userReturns;
     }
-    
+
     //get all accounts and info for specific bank
     function getAllAccount(uint256 _bankName) public view returns(UserDataReturn[] memory){
         UserDataReturn[] memory userAdd= new UserDataReturn[](user_acc.length);
@@ -83,6 +83,22 @@ contract Bank{
         }
         return userAdd;
 
+    }
+
+    //get balance for specific address and user account
+    function getBalance(address _accAddress, uint _user_acc) public view returns(uint256){
+       return UserDetails[_accAddress][_user_acc].balance;
+    }
+
+    //transfer balance from one account to another
+    function balanceTransfer(uint256 _senderBalance,uint256 _senderAcc,uint256 _receiverAcc, address _receiverAddress) public{                        
+        uint256 totalBalance=getBalance(msg.sender,_senderAcc);
+        if(totalBalance >= _senderBalance){
+            //decrease sender balance
+            UserDetails[msg.sender][_senderAcc].balance=UserDetails[msg.sender][_senderAcc].balance - _senderBalance;
+            //increase receiver balance
+            UserDetails[_receiverAddress][_receiverAcc].balance=UserDetails[_receiverAddress][_receiverAcc].balance + _senderBalance;
+        }       
     }
     
 }
