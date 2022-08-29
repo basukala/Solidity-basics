@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
 
-contract Bank{
+contract BankData{
     struct UserData{
         uint256 bank_name;
         string branch;
@@ -9,30 +9,66 @@ contract Bank{
         bool isExists;
     }
 
-
     struct UserDataReturn{
         uint256 bank_account_num;
         uint256 bank_name;
         string branch;
         uint256 balance;
     }
-
+    address public owner=msg.sender;
     mapping(address=>mapping(uint256=>UserData)) public UserDetails; //mapping address with the user account details
 
     address[] public user_address; //initializing dynamic state variable for address
     uint256[] public user_acc; //initializing dynamic state varaible for user account
+    bool isAdmin=true;
 
+    event UserInfo(
+        uint256 bank_name,
+        string branch,
+        uint256 balance,
+        bool isExists
+    );
+
+    event UserInfoReturn(
+        uint256 bank_account_num,
+        uint256 bank_name,
+        string branch,
+        uint256 balance        
+    );
+
+    event EventBalanceTransfer(
+        uint256 senderBalance,
+        uint256 senderAcc,
+        uint256 receiverAcc,
+        address receiverAddress
+    );
+
+     event EventBalanceDeposit(
+        uint256 bank_acc_number,
+        uint256 balance
+    );
+
+    function transferViewPermission(address _addr) public  {
+        require(msg.sender==owner);
+        owner=_addr;       
+    }
+
+    function actualAdmin() public {
+        require(msg.sender==owner);
+    }
 
     //set data as per the mapping for user accounts
     function setUserData(uint256 _bank_account_num,uint256 _bank_name, string memory _branch, uint256 _balance)  public {
         UserDetails[msg.sender][_bank_account_num]=UserData(_bank_name,_branch,_balance,true);
         user_address.push(msg.sender);
         user_acc.push(_bank_account_num);
+        emit UserInfo(_bank_name,_branch,_balance,true);
     }
 
     //set deposit balance as per the bank acc number
     function userDeposit(uint256 _bank_account_num,uint256 _balance) public{
         UserDetails[msg.sender][_bank_account_num].balance=UserDetails[msg.sender][_bank_account_num].balance + _balance;
+        emit EventBalanceDeposit(_bank_account_num,_balance);
     }
 
     //set withdraw balance as per the bank acc number
@@ -54,9 +90,9 @@ contract Bank{
                 );
                  userReturns[counter] = returnData;
                  counter++;
-            }
-           
+            }    
         }
+        
         return userReturns;
     }
 
@@ -98,7 +134,10 @@ contract Bank{
             UserDetails[msg.sender][_senderAcc].balance=UserDetails[msg.sender][_senderAcc].balance - _senderBalance;
             //increase receiver balance
             UserDetails[_receiverAddress][_receiverAcc].balance=UserDetails[_receiverAddress][_receiverAcc].balance + _senderBalance;
-        }       
+        }
+
+        emit EventBalanceTransfer(_senderBalance,_senderAcc,_receiverAcc,_receiverAddress);
     }
+    
     
 }
